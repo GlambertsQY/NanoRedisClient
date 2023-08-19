@@ -6,7 +6,7 @@ using UnrealBuildTool;
 public class Hiredis : ModuleRules
 {
 	private bool _forceStaticLibInEditor = false;
-	
+    
 	public Hiredis(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
@@ -20,16 +20,23 @@ public class Hiredis : ModuleRules
 	void ThirdParty(ReadOnlyTargetRules Target)
 	{
 		// add header
-		PublicIncludePaths.AddRange(new string[] { Path.Combine(ModuleDirectory, "Inc") });
+		PublicIncludePaths.AddRange(new string[] { Path.Combine(ModuleDirectory, "include") });
 
 		// add lib
 		string LibraryPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "Lib"));
-		if (Target.Platform == UnrealTargetPlatform.Win64)
+		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.HoloLens)
 		{
-			if (!Target.bBuildEditor || _forceStaticLibInEditor)
+			if (_forceStaticLibInEditor)
 			{
-				string Win64LibraryPath = Path.Combine(LibraryPath, "Win64");
-				PublicAdditionalLibraries.Add(Path.Combine(Win64LibraryPath, "hiredis_staticd.lib"));
+				if (Target.Platform == UnrealTargetPlatform.Win64)
+				{
+					string Win64LibraryPath = Path.Combine(LibraryPath, "Win64");
+					PublicAdditionalLibraries.Add(Path.Combine(Win64LibraryPath, "hiredis_static.lib"));
+				}else if (Target.Platform == UnrealTargetPlatform.HoloLens)
+				{
+					string Arm64LibraryPath = Path.Combine(LibraryPath, "Arm64");
+					PublicAdditionalLibraries.Add(Path.Combine(Arm64LibraryPath, "hiredis_static.lib"));
+				}
 			} else {
 				WinDll(LibraryPath);
 			}
@@ -52,11 +59,25 @@ public class Hiredis : ModuleRules
 	
 	void WinDll(string LibraryPath)
 	{
-		string Win64LibraryPath = Path.Combine(LibraryPath, "Win64");
-		PublicAdditionalLibraries.Add(Path.Combine(Win64LibraryPath, "hiredisd.lib"));
-		
-		AddRuntimeDependencies(new string[] {
-			"hiredisd.dll",
-		}, Win64LibraryPath, false);
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			string Win64LibraryPath = Path.Combine(LibraryPath, "Win64");
+			PublicAdditionalLibraries.Add(Path.Combine(Win64LibraryPath, "hiredisd.lib"));
+
+			AddRuntimeDependencies(new string[]
+			{
+				"hiredisd.dll",
+			}, Win64LibraryPath, false);
+		}
+		else if (Target.Platform == UnrealTargetPlatform.HoloLens)
+		{
+			string Arm64LibraryPath = Path.Combine(LibraryPath, "Arm64");
+			PublicAdditionalLibraries.Add(Path.Combine(Arm64LibraryPath, "hiredis.lib"));
+
+			AddRuntimeDependencies(new string[]
+			{
+				"hiredis.dll",
+			}, Arm64LibraryPath, false);
+		}
 	}
 }

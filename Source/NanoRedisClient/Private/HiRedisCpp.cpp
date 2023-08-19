@@ -1,12 +1,13 @@
 ﻿// Copyright 2022 Danyang Chen https://github.com/DAN-AND-DNA
 
 #include "HiRedisCpp.h"
-#include "hiredis.h"
-#if PLATFORM_WINDOWS
+#include "hiredis/hiredis.h"
+#if PLATFORM_WINDOWS || PLATFORM_HOLOLENS
 #include "Windows/AllowWindowsPlatformTypes.h"
 //#include "Windows/AllowWindowsPlatformAtomics.h"
 THIRD_PARTY_INCLUDES_START
-#include "win32.h"
+// #include "win32.h"
+#include "WinSock2.h"
 THIRD_PARTY_INCLUDES_END
 //#include "Windows/HideWindowsPlatformAtomics.h"
 //#include "Windows/HideWindowsPlatformTypes.h"
